@@ -41,7 +41,7 @@ steps:
       **\*.Commands.WebApi.zip
       **\*.Events.WebApi.zip
       **\*.Queries.WebApi.zip
-      **\*.UI.zip
+      **\*.UI.Web.zip
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
     flattenFolders: true
 
