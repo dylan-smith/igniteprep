@@ -36,7 +36,12 @@ steps:
 - task: CopyFiles@2
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)\'
-    Contents: '**\*.dacpac'
+    Contents: |
+      **\*.dacpac
+      **\*.Commands.WebApi.zip
+      **\*.Events.WebApi.zip
+      **\*.Queries.WebApi.zip
+      **\*.UI.WebApi.zip
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
     flattenFolders: true
 
