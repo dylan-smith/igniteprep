@@ -109,7 +109,23 @@
             "properties": {
                 "enabled": true,
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appname'))]"
-            }
+            },
+            "resources": [
+                {
+                    "apiVersion": "2015-08-01",
+                    "type": "config",
+                    "name": "appsettings",
+                    "dependsOn": [
+                        "[concat('Microsoft.Web/sites/', parameters('appname'))]",
+                        "[concat('Microsoft.Insights/components/', parameters('appname'))]"
+                    ],
+                    "properties": {
+                        "QueryServiceUrl": "[concat('http://', parameters('appname'), '-queries.azurewebsites.net')]",
+                        "CommandServiceUrl": "[concat('http://', parameters('appname'), '-commands.azurewebsites.net')]",
+                        "AppInsightsKey": "[reference(resourceId('Microsoft.Insights/components', parameters('appname')), '2014-04-01').InstrumentationKey]"
+                    }
+                }
+            ]
         },
         {
             "type": "Microsoft.Web/sites",
@@ -123,7 +139,34 @@
             "properties": {
                 "enabled": true,
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appname'))]"
-            }
+            },
+            "resources": [
+                {
+                    "apiVersion": "2015-08-01",
+                    "type": "config",
+                    "name": "connectionstrings",
+                    "dependsOn": [ "[concat('Microsoft.Web/sites/', parameters('appname'), '-commands')]" ],
+                    "properties": {
+                        "default": {
+                            "value": "[concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', parameters('appname'))).fullyQualifiedDomainName, ',1433;Initial Catalog=Events;User Id=dylan;Password=P2ssw0rd;')]",
+                            "type": "SQLAzure"
+                        }
+                    }
+                },
+                {
+                    "apiVersion": "2015-08-01",
+                    "type": "config",
+                    "name": "appsettings",
+                    "dependsOn": [
+                        "[concat('Microsoft.Web/sites/', parameters('appname'), '-commands')]",
+                        "[concat('Microsoft.Insights/components/', parameters('appname'))]"
+                    ],
+                    "properties": {
+                        "QueryServiceUrl": "[concat('http://', parameters('appname'), '-queries.azurewebsites.net')]",
+                        "AppInsightsKey": "[reference(resourceId('Microsoft.Insights/components', parameters('appname')), '2014-04-01').InstrumentationKey]"
+                    }
+                }
+            ]
         },
         {
             "type": "Microsoft.Web/sites",
@@ -137,7 +180,33 @@
             "properties": {
                 "enabled": true,
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appname'))]"
-            }
+            },
+            "resources": [
+                {
+                    "apiVersion": "2015-08-01",
+                    "type": "config",
+                    "name": "connectionstrings",
+                    "dependsOn": [ "[concat('Microsoft.Web/sites/', parameters('appname'), '-events')]" ],
+                    "properties": {
+                        "default": {
+                            "value": "[concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', parameters('appname'))).fullyQualifiedDomainName, ',1433;Initial Catalog=Queries;User Id=dylan;Password=P2ssw0rd;')]",
+                            "type": "SQLAzure"
+                        }
+                    }
+                },
+                {
+                    "apiVersion": "2015-08-01",
+                    "type": "config",
+                    "name": "appsettings",
+                    "dependsOn": [
+                        "[concat('Microsoft.Web/sites/', parameters('appname'), '-events')]",
+                        "[concat('Microsoft.Insights/components/', parameters('appname'))]"
+                    ],
+                    "properties": {
+                        "AppInsightsKey": "[reference(resourceId('Microsoft.Insights/components', parameters('appname')), '2014-04-01').InstrumentationKey]"
+                    }
+                }
+            ]
         },
         {
             "type": "Microsoft.Web/sites",
@@ -151,7 +220,33 @@
             "properties": {
                 "enabled": true,
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appname'))]"
-            }
+            },
+            "resources": [
+                {
+                    "apiVersion": "2015-08-01",
+                    "type": "config",
+                    "name": "connectionstrings",
+                    "dependsOn": [ "[concat('Microsoft.Web/sites/', parameters('appname'), '-queries')]" ],
+                    "properties": {
+                        "default": {
+                            "value": "[concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', parameters('appname'))).fullyQualifiedDomainName, ',1433;Initial Catalog=Queries;User Id=dylan;Password=P2ssw0rd;')]",
+                            "type": "SQLAzure"
+                        }
+                    }
+                },
+                {
+                    "apiVersion": "2015-08-01",
+                    "type": "config",
+                    "name": "appsettings",
+                    "dependsOn": [
+                        "[concat('Microsoft.Web/sites/', parameters('appname'), '-events')]",
+                        "[concat('Microsoft.Insights/components/', parameters('appname'))]"
+                    ],
+                    "properties": {
+                        "AppInsightsKey": "[reference(resourceId('Microsoft.Insights/components', parameters('appname')), '2014-04-01').InstrumentationKey]"
+                    }
+                }
+            ]
         },
         {
             "type": "Microsoft.Web/sites/config",
