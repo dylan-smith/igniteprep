@@ -13,6 +13,7 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  adhocrg: 'dylanadhocpoker'
 
 steps:
 - task: NuGetToolInstaller@1
@@ -67,21 +68,79 @@ steps:
     ConnectedServiceName: 'WorkshopAzure'
     subscriptionName: 'e16d929e-2ebf-4445-805e-c032ef6c4559'
     action: 'Create Or Update Resource Group'
-    resourceGroupName: 'dylanadhocpoker'
+    resourceGroupName: '$(adhocrg)'
     location: 'West US 2'
     templateLocation: 'Linked artifact'
     csmFile: '$(Build.ArtifactStagingDirectory)\deploy\Azure ARM\ArmTemplate.json'
-    overrideParameters: '-appname dylanadhocpoker'
+    overrideParameters: '-appname $(adhocrg)'
     deploymentMode: 'Incremental'
+
+- task: AzureRmWebAppDeployment@4
+  inputs:
+    ConnectionType: 'AzureRM'
+    azureSubscription: 'WorkshopAzure'
+    appType: 'webApp'
+    WebAppName: '$(adhocrg)-commands'
+    packageForLinux: '$(System.ArtifactStagingDirectory)\PokerLeagueManager.Commands.WebApi.zip'
+
+- task: AzureRmWebAppDeployment@4
+  inputs:
+    ConnectionType: 'AzureRM'
+    azureSubscription: 'WorkshopAzure'
+    appType: 'webApp'
+    WebAppName: '$(adhocrg)-events'
+    packageForLinux: '$(System.ArtifactStagingDirectory)\PokerLeagueManager.Events.WebApi.zip'
+
+- task: AzureRmWebAppDeployment@4
+  inputs:
+    ConnectionType: 'AzureRM'
+    azureSubscription: 'WorkshopAzure'
+    appType: 'webApp'
+    WebAppName: '$(adhocrg)-queries'
+    packageForLinux: '$(System.ArtifactStagingDirectory)\PokerLeagueManager.Queries.WebApi.zip'
+
+- task: AzureRmWebAppDeployment@4
+  inputs:
+    ConnectionType: 'AzureRM'
+    azureSubscription: 'WorkshopAzure'
+    appType: 'webApp'
+    WebAppName: '$(adhocrg)'
+    packageForLinux: '$(System.ArtifactStagingDirectory)\PokerLeagueManager.UI.Web.zip'
+
+- task: SqlAzureDacpacDeployment@1
+  inputs:
+    azureSubscription: 'WorkshopAzure'
+    AuthenticationType: 'server'
+    ServerName: '$(adhocrg).database.windows.net'
+    DatabaseName: 'Events'
+    SqlUsername: 'dylan'
+    SqlPassword: 'P2ssw0rd'
+    deployType: 'DacpacTask'
+    DeploymentAction: 'Publish'
+    DacpacFile: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.DB.EventStore.dacpac'
+    IpDetectionMethod: 'AutoDetect'
+
+- task: SqlAzureDacpacDeployment@1
+  inputs:
+    azureSubscription: 'WorkshopAzure'
+    AuthenticationType: 'server'
+    ServerName: '$(adhocrg).database.windows.net'
+    DatabaseName: 'Queries'
+    SqlUsername: 'dylan'
+    SqlPassword: 'P2ssw0rd'
+    deployType: 'DacpacTask'
+    DeploymentAction: 'Publish'
+    DacpacFile: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.DB.QueryStore.dacpac'
+    IpDetectionMethod: 'AutoDetect'
 
 - task: CmdLine@2
   inputs:
-    script: 'PokerLeagueManager.Utilities.exe CreateEventSubscriber dylanadhocpoker.database.windows.net Events dylan P2ssw0rd http://dylanadhocpoker-events.azurewebsites.net'
+    script: 'PokerLeagueManager.Utilities.exe CreateEventSubscriber $(adhocrg).database.windows.net Events dylan P2ssw0rd http://$(adhocrg)-events.azurewebsites.net'
     workingDirectory: '$(Build.ArtifactStagingDirectory)\Utility'
 
 - task: CmdLine@2
   inputs:
-    script: 'PokerLeagueManager.Utilities.exe GenerateSampleData http://dylanadhocpoker-commands.azurewebsites.net 5'
+    script: 'PokerLeagueManager.Utilities.exe GenerateSampleData http://$(adhocrg)-commands.azurewebsites.net 5'
     workingDirectory: '$(Build.ArtifactStagingDirectory)\Utility'
 
 - task: AzureResourceManagerTemplateDeployment@3
@@ -90,7 +149,7 @@ steps:
     ConnectedServiceName: 'WorkshopAzure'
     subscriptionName: 'e16d929e-2ebf-4445-805e-c032ef6c4559'
     action: 'DeleteRG'
-    resourceGroupName: 'dylanadhocpoker'
+    resourceGroupName: '$(adhocrg)'
 
 - task: PublishBuildArtifacts@1
   inputs:
