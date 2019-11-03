@@ -15,7 +15,7 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
-  adhocrg: 'dylanadhocpoker004'
+  adhocrg: 'dylanadhocpoker005'
 
 steps:
 - task: NuGetToolInstaller@1
@@ -31,7 +31,7 @@ steps:
   displayName: Build Angular
   inputs:
     filename: '$(Build.SourcesDirectory)\src\PokerLeagueManager.UI.Web\BuildAngular.bat'
-  enabled: false
+  enabled: true
     
 - task: VSBuild@1
   displayName: Build Solution
@@ -47,7 +47,7 @@ steps:
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
-  enabled: false
+  enabled: true
 
 - task: CopyFiles@2
   displayName: Copy Artifacts
@@ -92,7 +92,7 @@ steps:
     csmFile: '$(Build.ArtifactStagingDirectory)\deploy\Azure ARM\ArmTemplate.json'
     overrideParameters: '-appname $(adhocrg)'
     deploymentMode: 'Incremental'
-  enabled: false
+  enabled: true
 
 - task: AzureRmWebAppDeployment@4
   displayName: Deploy Commands Service
@@ -102,7 +102,7 @@ steps:
     appType: 'webApp'
     WebAppName: '$(adhocrg)-commands'
     packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.Commands.WebApi.zip'
-  enabled: false
+  enabled: true
 
 - task: AzureRmWebAppDeployment@4
   displayName: Deploy Events Service
@@ -112,7 +112,7 @@ steps:
     appType: 'webApp'
     WebAppName: '$(adhocrg)-events'
     packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.Events.WebApi.zip'
-  enabled: false
+  enabled: true
 
 - task: AzureRmWebAppDeployment@4
   displayName: Deploy Queries Service
@@ -122,7 +122,7 @@ steps:
     appType: 'webApp'
     WebAppName: '$(adhocrg)-queries'
     packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.Queries.WebApi.zip'
-  enabled: false
+  enabled: true
 
 - task: AzureRmWebAppDeployment@4
   displayName: Deploy UI Website
@@ -132,7 +132,7 @@ steps:
     appType: 'webApp'
     WebAppName: '$(adhocrg)'
     packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.UI.Web.zip'
-  enabled: false
+  enabled: true
 
 - task: SqlAzureDacpacDeployment@1
   displayName: Deploy Events DB
@@ -189,7 +189,7 @@ steps:
     action: 'DeleteRG'
     location: 'West US 2'
     resourceGroupName: '$(adhocrg)'
-  enabled: false
+  enabled: true
 
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifacts
