@@ -23,12 +23,12 @@ steps:
 - task: NuGetCommand@2
   inputs:
     restoreSolution: '$(solution)'
-  enabled: true
+  enabled: false
 
 - task: BatchScript@1
   inputs:
     filename: '$(Build.SourcesDirectory)\src\PokerLeagueManager.UI.Web\BuildAngular.bat'
-  enabled: true
+  enabled: false
     
 - task: VSBuild@1
   inputs:
@@ -36,13 +36,13 @@ steps:
     msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
-  enabled: true
+  enabled: false
 
 - task: VSTest@2
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
-  enabled: true
+  enabled: false
 
 - task: CopyFiles@2
   inputs:
@@ -55,14 +55,14 @@ steps:
       **\*.UI.Web.zip
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
     flattenFolders: true
-  enabled: true
+  enabled: false
 
 - task: CopyFiles@2
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)\src\PokerLeagueManager.Utilities\bin\$(buildConfiguration)'
     Contents: '**'
     TargetFolder: '$(Build.ArtifactStagingDirectory)\Utility'
-  enabled: true
+  enabled: false
 
 - task: CopyFiles@2
   inputs:
@@ -91,6 +91,7 @@ steps:
     appType: 'webApp'
     WebAppName: '$(adhocrg)-commands'
     packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.Commands.WebApi.zip'
+  enabled: false
 
 - task: AzureRmWebAppDeployment@4
   inputs:
@@ -115,6 +116,7 @@ steps:
     appType: 'webApp'
     WebAppName: '$(adhocrg)'
     packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.UI.Web.zip'
+  enabled: false
 
 - task: SqlAzureDacpacDeployment@1
   inputs:
@@ -143,16 +145,19 @@ steps:
     DacpacFile: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.DB.QueryStore.dacpac'
     IpDetectionMethod: 'AutoDetect'
     AdditionalArguments: '/p:CreateNewDatabase=true'
+  enabled: false
 
 - task: CmdLine@2
   inputs:
     script: 'PokerLeagueManager.Utilities.exe CreateEventSubscriber $(adhocrg).database.windows.net Events dylan P2ssw0rd http://$(adhocrg)-events.azurewebsites.net'
     workingDirectory: '$(Build.ArtifactStagingDirectory)\Utility'
+  enabled: false
 
 - task: CmdLine@2
   inputs:
     script: 'PokerLeagueManager.Utilities.exe GenerateSampleData http://$(adhocrg)-commands.azurewebsites.net 5'
     workingDirectory: '$(Build.ArtifactStagingDirectory)\Utility'
+  enabled: false
 
 - task: AzureResourceManagerTemplateDeployment@3
   inputs:
