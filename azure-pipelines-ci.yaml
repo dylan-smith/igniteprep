@@ -13,7 +13,7 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
-  adhocrg: 'dylanadhocpoker001'
+  adhocrg: 'dylanadhocpoker002'
 
 steps:
 - task: NuGetToolInstaller@1
@@ -21,12 +21,12 @@ steps:
 - task: NuGetCommand@2
   inputs:
     restoreSolution: '$(solution)'
-  enabled: false
+  enabled: true
 
 - task: BatchScript@1
   inputs:
     filename: '$(Build.SourcesDirectory)\src\PokerLeagueManager.UI.Web\BuildAngular.bat'
-  enabled: false
+  enabled: true
     
 - task: VSBuild@1
   inputs:
@@ -34,13 +34,13 @@ steps:
     msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
-  enabled: false
+  enabled: true
 
 - task: VSTest@2
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
-  enabled: false
+  enabled: true
 
 - task: CopyFiles@2
   inputs:
@@ -53,7 +53,7 @@ steps:
       **\*.UI.Web.zip
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
     flattenFolders: true
-  enabled: false
+  enabled: true
 
 - task: CopyFiles@2
   inputs:
