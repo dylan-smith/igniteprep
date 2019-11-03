@@ -67,7 +67,7 @@ steps:
     SourceFolder: '$(Build.SourcesDirectory)\deploy'
     Contents: '**'
     TargetFolder: '$(Build.ArtifactStagingDirectory)\deploy'
-  enabled: false
+  enabled: true
 
 - task: AzureResourceManagerTemplateDeployment@3
   inputs:
