@@ -53,18 +53,21 @@ steps:
       **\*.UI.Web.zip
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
     flattenFolders: true
+  enabled: false
 
 - task: CopyFiles@2
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)\src\PokerLeagueManager.Utilities\bin\$(buildConfiguration)'
     Contents: '**'
     TargetFolder: '$(Build.ArtifactStagingDirectory)\Utility'
+  enabled: false
 
 - task: CopyFiles@2
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)\deploy'
     Contents: '**'
     TargetFolder: '$(Build.ArtifactStagingDirectory)\deploy'
+  enabled: false
 
 - task: AzureResourceManagerTemplateDeployment@3
   inputs:
