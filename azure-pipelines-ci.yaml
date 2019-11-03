@@ -15,7 +15,7 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
-  adhocrg: 'dylanadhocpoker003'
+  adhocrg: 'dylanadhocpoker004'
 
 steps:
 - task: NuGetToolInstaller@1
