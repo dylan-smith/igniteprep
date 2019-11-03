@@ -105,7 +105,7 @@ steps:
     azureSubscription: 'WorkshopAzure'
     appType: 'webApp'
     WebAppName: '$(adhocrg)'
-    packageForLinux: '$(System.ArtifactStagingDirectory)\PokerLeagueManager.UI.Web.zip'
+    packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.UI.Web.zip'
 
 - task: SqlAzureDacpacDeployment@1
   inputs:
