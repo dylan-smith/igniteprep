@@ -19,32 +19,38 @@ variables:
 
 steps:
 - task: NuGetToolInstaller@1
+  displayName: Install NuGet
 
 - task: NuGetCommand@2
+  displayName: NuGet Restore
   inputs:
     restoreSolution: '$(solution)'
   enabled: false
 
 - task: BatchScript@1
+  displayName: Build Angular
   inputs:
     filename: '$(Build.SourcesDirectory)\src\PokerLeagueManager.UI.Web\BuildAngular.bat'
-  enabled: false
+  enabled: true
     
 - task: VSBuild@1
+  displayName: Build Solution
   inputs:
     solution: '$(solution)'
     msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
-  enabled: false
+  enabled: true
 
 - task: VSTest@2
+  displayName: Run Unit Tests
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
-  enabled: false
+  enabled: true
 
 - task: CopyFiles@2
+  displayName: Copy Artifacts
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)\'
     Contents: |
@@ -55,16 +61,18 @@ steps:
       **\*.UI.Web.zip
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
     flattenFolders: true
-  enabled: false
+  enabled: true
 
 - task: CopyFiles@2
+  displayName: Copy Utility
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)\src\PokerLeagueManager.Utilities\bin\$(buildConfiguration)'
     Contents: '**'
     TargetFolder: '$(Build.ArtifactStagingDirectory)\Utility'
-  enabled: false
+  enabled: true
 
 - task: CopyFiles@2
+  displayName: Copy Deploy folder
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)\deploy'
     Contents: '**'
@@ -72,6 +80,7 @@ steps:
   enabled: true
 
 - task: AzureResourceManagerTemplateDeployment@3
+  displayName: Provision Environment
   inputs:
     deploymentScope: 'Resource Group'
     ConnectedServiceName: 'WorkshopAzure'
@@ -85,42 +94,47 @@ steps:
     deploymentMode: 'Incremental'
 
 - task: AzureRmWebAppDeployment@4
+  displayName: Deploy Commands Service
   inputs:
     ConnectionType: 'AzureRM'
     azureSubscription: 'WorkshopAzure'
     appType: 'webApp'
     WebAppName: '$(adhocrg)-commands'
     packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.Commands.WebApi.zip'
-  enabled: false
+  enabled: true
 
 - task: AzureRmWebAppDeployment@4
+  displayName: Deploy Events Service
   inputs:
     ConnectionType: 'AzureRM'
     azureSubscription: 'WorkshopAzure'
     appType: 'webApp'
     WebAppName: '$(adhocrg)-events'
     packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.Events.WebApi.zip'
-  enabled: false
+  enabled: true
 
 - task: AzureRmWebAppDeployment@4
+  displayName: Deploy Queries Service
   inputs:
     ConnectionType: 'AzureRM'
     azureSubscription: 'WorkshopAzure'
     appType: 'webApp'
     WebAppName: '$(adhocrg)-queries'
     packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.Queries.WebApi.zip'
-  enabled: false
+  enabled: true
 
 - task: AzureRmWebAppDeployment@4
+  displayName: Deploy UI Website
   inputs:
     ConnectionType: 'AzureRM'
     azureSubscription: 'WorkshopAzure'
     appType: 'webApp'
     WebAppName: '$(adhocrg)'
     packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.UI.Web.zip'
-  enabled: false
+  enabled: true
 
 - task: SqlAzureDacpacDeployment@1
+  displayName: Deploy Events DB
   inputs:
     azureSubscription: 'WorkshopAzure'
     AuthenticationType: 'server'
@@ -133,9 +147,10 @@ steps:
     DacpacFile: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.DB.EventStore.dacpac'
     IpDetectionMethod: 'AutoDetect'
     AdditionalArguments: '/p:CreateNewDatabase=true'
-  enabled: false
+  enabled: true
 
 - task: SqlAzureDacpacDeployment@1
+  displayName: Deploy Queries DB
   inputs:
     azureSubscription: 'WorkshopAzure'
     AuthenticationType: 'server'
@@ -148,21 +163,24 @@ steps:
     DacpacFile: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.DB.QueryStore.dacpac'
     IpDetectionMethod: 'AutoDetect'
     AdditionalArguments: '/p:CreateNewDatabase=true'
-  enabled: false
+  enabled: true
 
 - task: CmdLine@2
+  displayName: Register Event Subscriber
   inputs:
     script: 'PokerLeagueManager.Utilities.exe CreateEventSubscriber $(adhocrg).database.windows.net Events dylan P2ssw0rd http://$(adhocrg)-events.azurewebsites.net'
     workingDirectory: '$(Build.ArtifactStagingDirectory)\Utility'
-  enabled: false
+  enabled: true
 
 - task: CmdLine@2
+  displayName: Integration Test
   inputs:
     script: 'PokerLeagueManager.Utilities.exe GenerateSampleData http://$(adhocrg)-commands.azurewebsites.net 5'
     workingDirectory: '$(Build.ArtifactStagingDirectory)\Utility'
-  enabled: false
+  enabled: true
 
 - task: AzureResourceManagerTemplateDeployment@3
+  displayName: Delete Environment
   inputs:
     deploymentScope: 'Resource Group'
     ConnectedServiceName: 'WorkshopAzure'
@@ -172,6 +190,7 @@ steps:
     resourceGroupName: '$(adhocrg)'
 
 - task: PublishBuildArtifacts@1
+  displayName: Publish Artifacts
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
