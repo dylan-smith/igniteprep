@@ -61,6 +61,37 @@ steps:
     Contents: '**'
     TargetFolder: '$(Build.ArtifactStagingDirectory)\deploy'
 
+- task: AzureResourceManagerTemplateDeployment@3
+  inputs:
+    deploymentScope: 'Resource Group'
+    ConnectedServiceName: 'WorkshopAzure'
+    subscriptionName: 'e16d929e-2ebf-4445-805e-c032ef6c4559'
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: 'dylanadhocpoker'
+    location: 'West US 2'
+    templateLocation: 'Linked artifact'
+    csmFile: '$(Build.ArtifactStagingDirectory)\deploy\ArmTemplate.json'
+    overrideParameters: '-appname dylanadhocpoker'
+    deploymentMode: 'Incremental'
+
+- task: CmdLine@2
+  inputs:
+    script: 'PokerLeagueManager.Utilities.exe CreateEventSubscriber dylanadhocpoker.database.windows.net Events dylan P2ssw0rd http://dylanadhocpoker-events.azurewebsites.net'
+    workingDirectory: '$(Build.ArtifactStagingDirectory)\Utility'
+
+- task: CmdLine@2
+  inputs:
+    script: 'PokerLeagueManager.Utilities.exe GenerateSampleData http://dylanadhocpoker-commands.azurewebsites.net 5'
+    workingDirectory: '$(Build.ArtifactStagingDirectory)\Utility'
+
+- task: AzureResourceManagerTemplateDeployment@3
+  inputs:
+    deploymentScope: 'Resource Group'
+    ConnectedServiceName: 'WorkshopAzure'
+    subscriptionName: 'e16d929e-2ebf-4445-805e-c032ef6c4559'
+    action: 'DeleteRG'
+    resourceGroupName: 'dylanadhocpoker'
+
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
