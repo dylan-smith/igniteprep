@@ -239,7 +239,7 @@
                     "type": "config",
                     "name": "appsettings",
                     "dependsOn": [
-                        "[concat('Microsoft.Web/sites/', parameters('appname'), '-events')]",
+                        "[concat('Microsoft.Web/sites/', parameters('appname'), '-queries')]",
                         "[concat('Microsoft.Insights/components/', parameters('appname'))]"
                     ],
                     "properties": {
