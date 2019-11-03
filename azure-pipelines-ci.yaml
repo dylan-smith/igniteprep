@@ -61,7 +61,7 @@ steps:
       **\*.UI.Web.zip
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
     flattenFolders: true
-  enabled: false
+  enabled: true
 
 - task: CopyFiles@2
   displayName: Copy Utility
@@ -148,7 +148,7 @@ steps:
     DacpacFile: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.DB.EventStore.dacpac'
     IpDetectionMethod: 'AutoDetect'
     AdditionalArguments: '/p:CreateNewDatabase=true'
-  enabled: false
+  enabled: true
 
 - task: SqlAzureDacpacDeployment@1
   displayName: Deploy Queries DB
@@ -164,14 +164,14 @@ steps:
     DacpacFile: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.DB.QueryStore.dacpac'
     IpDetectionMethod: 'AutoDetect'
     AdditionalArguments: '/p:CreateNewDatabase=true'
-  enabled: false
+  enabled: true
 
 - task: CmdLine@2
   displayName: Register Event Subscriber
   inputs:
     script: 'PokerLeagueManager.Utilities.exe CreateEventSubscriber $(adhocrg).database.windows.net Events dylan P2ssw0rd http://$(adhocrg)-events.azurewebsites.net'
     workingDirectory: '$(Build.ArtifactStagingDirectory)\Utility'
-  enabled: false
+  enabled: true
 
 - task: CmdLine@2
   displayName: Integration Test
