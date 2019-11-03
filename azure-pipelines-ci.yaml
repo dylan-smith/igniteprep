@@ -1,0 +1,199 @@
+# ASP.NET
+# Build and test ASP.NET projects.
+# Add steps that publish symbols, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
+
+trigger: 
+- master
+
+pr: none
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+  adhocrg: 'dylanadhocpoker005'
+
+steps:
+- task: NuGetToolInstaller@1
+  displayName: Install NuGet
+
+- task: NuGetCommand@2
+  displayName: NuGet Restore
+  inputs:
+    restoreSolution: '$(solution)'
+  enabled: true
+
+- task: BatchScript@1
+  displayName: Build Angular
+  inputs:
+    filename: '$(Build.SourcesDirectory)\src\PokerLeagueManager.UI.Web\BuildAngular.bat'
+  enabled: true
+    
+- task: VSBuild@1
+  displayName: Build Solution
+  inputs:
+    solution: '$(solution)'
+    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+  enabled: true
+
+- task: VSTest@2
+  displayName: Run Unit Tests
+  inputs:
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+  enabled: true
+
+- task: CopyFiles@2
+  displayName: Copy Artifacts
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)\'
+    Contents: |
+      **\*.dacpac
+      **\*.Commands.WebApi.zip
+      **\*.Events.WebApi.zip
+      **\*.Queries.WebApi.zip
+      **\*.UI.Web.zip
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    flattenFolders: true
+  enabled: true
+
+- task: CopyFiles@2
+  displayName: Copy Utility
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)\src\PokerLeagueManager.Utilities\bin\$(buildConfiguration)'
+    Contents: '**'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)\Utility'
+  enabled: true
+
+- task: CopyFiles@2
+  displayName: Copy Deploy folder
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)\deploy'
+    Contents: '**'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)\deploy'
+  enabled: true
+
+- task: AzureResourceManagerTemplateDeployment@3
+  displayName: Provision Environment
+  inputs:
+    deploymentScope: 'Resource Group'
+    ConnectedServiceName: 'WorkshopAzure'
+    subscriptionName: 'e16d929e-2ebf-4445-805e-c032ef6c4559'
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: '$(adhocrg)'
+    location: 'West US 2'
+    templateLocation: 'Linked artifact'
+    csmFile: '$(Build.ArtifactStagingDirectory)\deploy\Azure ARM\ArmTemplate.json'
+    overrideParameters: '-appname $(adhocrg)'
+    deploymentMode: 'Incremental'
+  enabled: true
+
+- task: AzureRmWebAppDeployment@4
+  displayName: Deploy Commands Service
+  inputs:
+    ConnectionType: 'AzureRM'
+    azureSubscription: 'WorkshopAzure'
+    appType: 'webApp'
+    WebAppName: '$(adhocrg)-commands'
+    packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.Commands.WebApi.zip'
+  enabled: true
+
+- task: AzureRmWebAppDeployment@4
+  displayName: Deploy Events Service
+  inputs:
+    ConnectionType: 'AzureRM'
+    azureSubscription: 'WorkshopAzure'
+    appType: 'webApp'
+    WebAppName: '$(adhocrg)-events'
+    packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.Events.WebApi.zip'
+  enabled: true
+
+- task: AzureRmWebAppDeployment@4
+  displayName: Deploy Queries Service
+  inputs:
+    ConnectionType: 'AzureRM'
+    azureSubscription: 'WorkshopAzure'
+    appType: 'webApp'
+    WebAppName: '$(adhocrg)-queries'
+    packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.Queries.WebApi.zip'
+  enabled: true
+
+- task: AzureRmWebAppDeployment@4
+  displayName: Deploy UI Website
+  inputs:
+    ConnectionType: 'AzureRM'
+    azureSubscription: 'WorkshopAzure'
+    appType: 'webApp'
+    WebAppName: '$(adhocrg)'
+    packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.UI.Web.zip'
+  enabled: true
+
+- task: SqlAzureDacpacDeployment@1
+  displayName: Deploy Events DB
+  inputs:
+    azureSubscription: 'WorkshopAzure'
+    AuthenticationType: 'server'
+    ServerName: '$(adhocrg).database.windows.net'
+    DatabaseName: 'Events'
+    SqlUsername: 'dylan'
+    SqlPassword: 'P2ssw0rd'
+    deployType: 'DacpacTask'
+    DeploymentAction: 'Publish'
+    DacpacFile: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.DB.EventStore.dacpac'
+    IpDetectionMethod: 'AutoDetect'
+    AdditionalArguments: '/p:CreateNewDatabase=true'
+  enabled: true
+
+- task: SqlAzureDacpacDeployment@1
+  displayName: Deploy Queries DB
+  inputs:
+    azureSubscription: 'WorkshopAzure'
+    AuthenticationType: 'server'
+    ServerName: '$(adhocrg).database.windows.net'
+    DatabaseName: 'Queries'
+    SqlUsername: 'dylan'
+    SqlPassword: 'P2ssw0rd'
+    deployType: 'DacpacTask'
+    DeploymentAction: 'Publish'
+    DacpacFile: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.DB.QueryStore.dacpac'
+    IpDetectionMethod: 'AutoDetect'
+    AdditionalArguments: '/p:CreateNewDatabase=true'
+  enabled: true
+
+- task: CmdLine@2
+  displayName: Register Event Subscriber
+  inputs:
+    script: 'PokerLeagueManager.Utilities.exe CreateEventSubscriber $(adhocrg).database.windows.net Events dylan P2ssw0rd http://$(adhocrg)-events.azurewebsites.net'
+    workingDirectory: '$(Build.ArtifactStagingDirectory)\Utility'
+  enabled: true
+
+- task: CmdLine@2
+  displayName: Integration Test
+  inputs:
+    script: 'PokerLeagueManager.Utilities.exe GenerateSampleData http://$(adhocrg)-commands.azurewebsites.net 5'
+    workingDirectory: '$(Build.ArtifactStagingDirectory)\Utility'
+  enabled: true
+
+- task: AzureResourceManagerTemplateDeployment@3
+  displayName: Delete Environment
+  inputs:
+    deploymentScope: 'Resource Group'
+    ConnectedServiceName: 'WorkshopAzure'
+    subscriptionName: 'e16d929e-2ebf-4445-805e-c032ef6c4559'
+    action: 'DeleteRG'
+    location: 'West US 2'
+    resourceGroupName: '$(adhocrg)'
+  enabled: true
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Artifacts
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
