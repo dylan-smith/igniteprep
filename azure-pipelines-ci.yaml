@@ -25,7 +25,7 @@ steps:
   displayName: NuGet Restore
   inputs:
     restoreSolution: '$(solution)'
-  enabled: false
+  enabled: true
 
 - task: BatchScript@1
   displayName: Build Angular
