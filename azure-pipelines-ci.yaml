@@ -21,10 +21,12 @@ steps:
 - task: NuGetCommand@2
   inputs:
     restoreSolution: '$(solution)'
+  enabled: false
 
 - task: BatchScript@1
   inputs:
     filename: '$(Build.SourcesDirectory)\src\PokerLeagueManager.UI.Web\BuildAngular.bat'
+  enabled: false
     
 - task: VSBuild@1
   inputs:
@@ -32,11 +34,13 @@ steps:
     msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+  enabled: false
 
 - task: VSTest@2
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+  enabled: false
 
 - task: CopyFiles@2
   inputs:
@@ -119,6 +123,18 @@ steps:
     DeploymentAction: 'Publish'
     DacpacFile: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.DB.EventStore.dacpac'
     IpDetectionMethod: 'AutoDetect'
+
+steps:
+- task: SqlAzureDacpacDeployment@1
+  displayName: 'Azure SQL DacpacTask'
+  inputs:
+    azureSubscription: WorkshopAzure
+    ServerName: 001pokerdev.database.windows.net
+    DatabaseName: Events
+    SqlUsername: dylan
+    SqlPassword: P2ssw0rd
+    DacpacFile: '$(System.DefaultWorkingDirectory)/_dylan-smith.igniteprep/drop/PokerLeagueManager.DB.EventStore.dacpac'
+    AdditionalArguments: '/p:CreateNewDatabase=true'
 
 - task: SqlAzureDacpacDeployment@1
   inputs:
