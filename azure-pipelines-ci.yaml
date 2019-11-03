@@ -70,7 +70,7 @@ steps:
     resourceGroupName: 'dylanadhocpoker'
     location: 'West US 2'
     templateLocation: 'Linked artifact'
-    csmFile: '$(Build.ArtifactStagingDirectory)\deploy\ArmTemplate.json'
+    csmFile: '$(Build.ArtifactStagingDirectory)\deploy\Azure ARM\ArmTemplate.json'
     overrideParameters: '-appname dylanadhocpoker'
     deploymentMode: 'Incremental'
 
