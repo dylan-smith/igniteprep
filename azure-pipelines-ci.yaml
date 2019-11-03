@@ -81,7 +81,7 @@ steps:
     azureSubscription: 'WorkshopAzure'
     appType: 'webApp'
     WebAppName: '$(adhocrg)-commands'
-    packageForLinux: '$(System.ArtifactStagingDirectory)\PokerLeagueManager.Commands.WebApi.zip'
+    packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.Commands.WebApi.zip'
 
 - task: AzureRmWebAppDeployment@4
   inputs:
@@ -89,7 +89,7 @@ steps:
     azureSubscription: 'WorkshopAzure'
     appType: 'webApp'
     WebAppName: '$(adhocrg)-events'
-    packageForLinux: '$(System.ArtifactStagingDirectory)\PokerLeagueManager.Events.WebApi.zip'
+    packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.Events.WebApi.zip'
 
 - task: AzureRmWebAppDeployment@4
   inputs:
@@ -97,7 +97,7 @@ steps:
     azureSubscription: 'WorkshopAzure'
     appType: 'webApp'
     WebAppName: '$(adhocrg)-queries'
-    packageForLinux: '$(System.ArtifactStagingDirectory)\PokerLeagueManager.Queries.WebApi.zip'
+    packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.Queries.WebApi.zip'
 
 - task: AzureRmWebAppDeployment@4
   inputs:
