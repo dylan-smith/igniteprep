@@ -123,17 +123,6 @@ steps:
     DeploymentAction: 'Publish'
     DacpacFile: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.DB.EventStore.dacpac'
     IpDetectionMethod: 'AutoDetect'
-
-steps:
-- task: SqlAzureDacpacDeployment@1
-  displayName: 'Azure SQL DacpacTask'
-  inputs:
-    azureSubscription: WorkshopAzure
-    ServerName: 001pokerdev.database.windows.net
-    DatabaseName: Events
-    SqlUsername: dylan
-    SqlPassword: P2ssw0rd
-    DacpacFile: '$(System.DefaultWorkingDirectory)/_dylan-smith.igniteprep/drop/PokerLeagueManager.DB.EventStore.dacpac'
     AdditionalArguments: '/p:CreateNewDatabase=true'
 
 - task: SqlAzureDacpacDeployment@1
@@ -148,6 +137,7 @@ steps:
     DeploymentAction: 'Publish'
     DacpacFile: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.DB.QueryStore.dacpac'
     IpDetectionMethod: 'AutoDetect'
+    AdditionalArguments: '/p:CreateNewDatabase=true'
 
 - task: CmdLine@2
   inputs:
