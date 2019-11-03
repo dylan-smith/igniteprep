@@ -100,6 +100,7 @@ steps:
     appType: 'webApp'
     WebAppName: '$(adhocrg)-events'
     packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.Events.WebApi.zip'
+  enabled: false
 
 - task: AzureRmWebAppDeployment@4
   inputs:
@@ -108,6 +109,7 @@ steps:
     appType: 'webApp'
     WebAppName: '$(adhocrg)-queries'
     packageForLinux: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.Queries.WebApi.zip'
+  enabled: false
 
 - task: AzureRmWebAppDeployment@4
   inputs:
@@ -131,6 +133,7 @@ steps:
     DacpacFile: '$(Build.ArtifactStagingDirectory)\PokerLeagueManager.DB.EventStore.dacpac'
     IpDetectionMethod: 'AutoDetect'
     AdditionalArguments: '/p:CreateNewDatabase=true'
+  enabled: false
 
 - task: SqlAzureDacpacDeployment@1
   inputs:
